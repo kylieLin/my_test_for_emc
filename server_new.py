@@ -17,7 +17,7 @@ logger = logging.getLogger()
 my_array = array(20)
 
 
-@bottle.route('/create_lun', method='POST')
+@bottle.route('/lun', method='POST')
 def create_lun():
     '''
     create one or multiple lun
@@ -42,14 +42,17 @@ def create_lun():
     return json.dumps([ids, {0: "success"}])
 
 
-@bottle.route('/resize_lun', method='POST')
+@bottle.route('/lun', method='PUT')
 def resize_lun():
     '''
     update the size of a lun
     '''
-    postValue = request.POST.decode('utf-8')
-    lunID = request.POST.get('lunID')
-    size = int(request.POST.get('size'))
+    putValue = json.loads(request.body.read())
+
+    if len(putValue) != 2:
+        return json.dumps([{},{-1:"argument error"}])
+    lunID = putValue['lunID']
+    size = putValue['size']
 
     #check lun not in array
     if not lunID in my_array.array_luns:
@@ -73,14 +76,16 @@ def resize_lun():
                 return json.dumps([{},{-5,"resize failed"}])
             
 
-@bottle.route('/remove_lun', method='POST')
+@bottle.route('/lun', method='DELETE')
 def remove_lun():
     '''
     delete a lun, free the lun space and remove the lun from array
     '''
     #get params
-    postValue = request.POST.decode('utf-8')
-    lunID = request.POST.get('lunID')
+    value = json.loads(request.body.read())
+    if len(putValue) != 1:
+        return json.dumps([{},{-1:"argument error"}])
+    lunID = value['lunID']
 
     #check lun not in array
     if not lunID in my_array.array_luns:
@@ -100,7 +105,7 @@ def remove_lun():
             return json.dumps([{-5: "remove lun error"}])
 
 
-@bottle.route('/retrieve_lun_size', method='GET')
+@bottle.route('/lun', method='GET')
 def retrieve_lun_size():
     '''
     get size of a lun
