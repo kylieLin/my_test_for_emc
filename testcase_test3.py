@@ -52,9 +52,14 @@ def check_api_create(init_size, init_num=1):
     complete step1 and step2
     '''
     global exist_lun 
-    url_create = "http://localhost:8080/create_lun"
+    url_create = "http://localhost:8080/lun"
     create_data = {'size':init_size, 'number':init_num}
-    create_resp = json.loads(post_req(url_create, create_data))
+
+    data = urllib.urlencode(create_data)
+    req = urllib2.Request(url = url_create,data =data)
+    response = urllib2.urlopen(req)
+    
+    create_resp = json.loads(response.read())
     
     logger.info('create lun resp %s' % create_resp)
     assert int(create_resp[1].keys()[0]) == 0 
@@ -67,9 +72,15 @@ def check_api_resize(re_size):
     complete step3
     '''
     global exist_lun 
-    url_resize = "http://localhost:8080/resize_lun"
+    url_resize = "http://localhost:8080/lun"
     resize_data = {'lunID':exist_lun[-1], 'size':re_size}
-    resize_resps = json.loads(post_req(url_resize, resize_data))
+
+    data = json.dumps(resize_data)
+    request = urllib2.Request(url_resize, data = data)
+    request.get_method = lambda:'PUT'
+    response = urllib2.urlopen(request)
+
+    resize_resps = json.loads(response.read()) 
 
     logger.info('resize lun resp %s' % resize_resps)
     assert int(resize_resps[1].keys()[0]) == 0
@@ -80,8 +91,12 @@ def check_api_retrive(size):
     complete step4
     '''
     global exist_lun 
-    url_retrieve = "http://localhost:8080/retrieve_lun_size?lunID=%s" % exist_lun[-1]
-    retrive_resp = json.loads(get_req(url_retrieve))
+    url_retrieve = "http://localhost:8080/lun?lunID=%s" % exist_lun[-1]
+    
+    req = urllib2.Request(url_retrieve)
+    response = urllib2.urlopen(req)
+    retrive_resp = json.loads(response.read())
+##    retrive_resp = json.loads(get_req(url_retrieve))
 
     logger.info('retrive lun resp %s' % retrive_resp)
     if size != 0:
@@ -94,30 +109,24 @@ def check_api_remove():
     complete step5
     '''
     global exist_lun 
-    url_remove = "http://localhost:8080/remove_lun"
+    url_remove = "http://localhost:8080/lun"
     remove_data = {'lunID': exist_lun[-1]}
-    remove_resp = json.loads(post_req(url_remove, remove_data))
-
+    
+    data = json.dumps(remove_data)
+    request = urllib2.Request(url_remove, data = data)
+    request.get_method = lambda:'DELETE'
+    response = urllib2.urlopen(request)
+    remove_resp = json.loads(response.read())
+    
     logger.info('remove lun resp %s' % remove_resp)
+    print type(remove_resp), remove_resp
     assert int(remove_resp[0].keys()[0]) == 0
     
        
-#POST
-def post_req(url,data):
-    test_data = data
-    test_data_urlencode = urllib.urlencode(test_data)
-    requrl = url
-    req = urllib2.Request(url = requrl,data =test_data_urlencode)
-    resp_data =urllib2.urlopen(req)
-    return resp_data.read()
-
-
-#GET
-def get_req(url):
-    req = urllib2.Request(url)
-    resps = urllib2.urlopen(req)
-    return resps.read() 
+ 
 
 if __name__=="__main__":
     check_api_function()
+##    check_api_create(2,2)
+##    check_api_retrive(3)
 

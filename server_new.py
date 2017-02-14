@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO, \
 logger = logging.getLogger()
 
 
-my_array = array(20)
+my_array = array(50)
 
 
 @bottle.route('/lun', method='POST')
@@ -83,7 +83,7 @@ def remove_lun():
     '''
     #get params
     value = json.loads(request.body.read())
-    if len(putValue) != 1:
+    if len(value) != 1:
         return json.dumps([{},{-1:"argument error"}])
     lunID = value['lunID']
 
